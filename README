@@ -1,0 +1,10 @@
+Ambient Illumination (or my not Ambilight clone)
+=====
+
+## Requirements
+* Python
+* Numpy
+* SciPy
+* OpenCV
+
+All of these bits can be installed via homebrew on Mac.

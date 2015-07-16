@@ -13,20 +13,23 @@ Steps:
 import cv2
 import numpy
 
-def openFile():
+# useful value for different lighting conditions
+BIAS = 0.0
+
+def open_file():
     '''
     For prototyping, let's just read a static image in
     and apply our logic before looping over a video stream.
     '''
-    return cv2.imread('test.jpg')
+    return cv2.imread('test2.jpg')
 
-def openStream():
+def open_stream():
     '''
     Open a video stream using cv2's convenience method.
     '''
     pass
 
-def findEdges(image):
+def find_edges(img):
     '''
     Assuming that our scene is simple, e.g., no distractions in the
     background from the subject (a tv or picture), let's detect the
@@ -35,7 +38,7 @@ def findEdges(image):
     '''
     pass
 
-def transformImage(image):
+def transform_image(img):
     '''
     (advanced) Time permitting, allow the camera to be placed anywhere
     so that a transform can be applied and we can grab the areas of
@@ -43,26 +46,73 @@ def transformImage(image):
     '''
     pass
 
-def applyKernel (image):
-    horizontal_regions = 16
-    vertical_regions = 8
-    (height, width) = image.shape
+def average_pixels (image, horiz=16, vert=8):
     '''
-    Apply a convolution over the image to average colors of the scene.
+    Apply a convolution (maybe) over the image to average colors of the scene.
+    u x x u     x = horizontal_regions
+    y     y     y = vertical_regions
+    y     y     u = nodes computed in both directions, for simplicity
+    u x x u
+
+    We want to create regions that will represent a single node (LED) in
+    the final output. The constants are defined with defaults.
     '''
+    # print image.shape
+    height, width = image.shape[:2]
+    horiz_pixels = width / horiz
+
+    vert_pixels = height / vert
+    mask = numpy.zeros((vert_pixels, horiz_pixels, 3))
+    # print 'mask\n', mask
+
+    # top row
+    for col in range(horiz):
+        bl = mask.shape[0]
+        tl = mask.shape[1]*col
+        tr = mask.shape[1] * (col + 1)
+        # returns tuple of len 4, but we ignore alpha channel
+        image[0:bl, tl:tr] = cv2.mean(image[0:bl, tl:tr])[:3]
+
+    # left col
+    for row in range(vert):
+        rh = mask.shape[1]
+        top = mask.shape[0] * row
+        bot = mask.shape[0] * (row + 1)
+        image[top:bot, 0:rh] = cv2.mean(image[top:bot, 0:rh])[:3]
 
 
-def saveOutput (output):
+    # right col
+    for row in range(vert):
+        rh = width
+        lh = rh - mask.shape[1]
+        top = mask.shape[0] * row
+        bot = mask.shape[0] * (row + 1)
+        image[top:bot, lh:rh] = cv2.mean(image[top:bot, lh:rh])[:3]
+
+    # bottom row
+    for col in range(horiz):
+        bot = height
+        top = bot - mask.shape[0]
+        lh = mask.shape[1] * col
+        rh = mask.shape[1] * (col + 1)
+        image[top:bot, lh:rh] = cv2.mean(image[top:bot, lh:rh])[:3]
+    return image
+
+def save_output (output):
     '''
     For prototyping, save the output as an image as a novel representation
     of the scene and for demoing the capabilities of the system.
     '''
-    cv2.imwrite('output.jpg')
+    cv2.imwrite('output2.jpg', output)
 
-def sendArray(output):
+def send_array(output):
     '''
     send the output as a stream to the serial monitor, so a listener
     like an Arduino can read the stream and process the input to turn
     on some LEDs.
     '''
     pass
+
+test_image = open_file()
+output = average_pixels(test_image)
+save_output(output)

@@ -20,6 +20,11 @@ general. Why limit it to just a TV (although that's my motivation)?
 1. Exception handling
 1. Simplify the UX
 1. Automate the edge/corner detection and warping
+1. White balance on stream
+1. Exposure on stream
+1. Let user reset points
+1. Let user quit
+1. CLI arguments
 
 ### Requirements
 * Python, tested on v 2.7.x

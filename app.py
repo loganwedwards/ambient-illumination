@@ -173,6 +173,7 @@ cv2.destroyWindow('corners')
 cv2.imshow('result', transform_image(setup_frame_copy))
 cv2.waitKey(0)
 
+
 while True:
     ret, frame = capture.read()
     # this works

@@ -15,6 +15,7 @@ import numpy
 
 # useful value for different lighting conditions
 BIAS = 0.0
+corners = []
 
 def open_file():
     '''
@@ -27,7 +28,7 @@ def open_stream():
     '''
     Open a video stream using cv2's convenience method.
     '''
-    pass
+    return cv2.VideoCapture(0)
 
 def find_edges(img):
     '''
@@ -36,7 +37,7 @@ def find_edges(img):
     edges of the interesting area (what we want to base our output on)
     and return that section of the image.
     '''
-    pass
+    return cv2.Canny(img, 150, 255)
 
 def transform_image(img):
     '''
@@ -44,7 +45,25 @@ def transform_image(img):
     so that a transform can be applied and we can grab the areas of
     interest.
     '''
-    pass
+    global corners
+    bounds = numpy.float32([[0,0], [640, 0], [0, 480], [640, 480]])
+    corners = numpy.float32(corners)
+    M = cv2.getPerspectiveTransform(corners, bounds)
+    dst = cv2.warpPerspective(img, M, (640,480))
+    return dst
+
+def fill_screen(frame_in):
+    # edges = find_edges(frame_in)
+    edges = cv2.Canny(frame_in, 150, 255)
+    MIN_LINE_LEN = 100
+    MAX_LINE_GAP = 10
+    lines = cv2.HoughLinesP(edges, 1, numpy.pi/180, 100, MIN_LINE_LEN, MAX_LINE_GAP)
+    try:
+        for x1,y1,x2,y2 in lines[0]:
+            cv2.line(frame_in,(x1,y1),(x2,y2),(0,255,0),2)
+    except:
+        return frame_in
+    return frame_in
 
 def average_pixels (image, horiz=16, vert=8):
     '''
@@ -113,6 +132,56 @@ def send_array(output):
     '''
     pass
 
-test_image = open_file()
-output = average_pixels(test_image)
-save_output(output)
+def add_corner(event, x, y, flags, param):
+    '''
+    Callback to capture a click event. User must select corners in
+    the following order: Top Left, Top Right, Bottom Left, Bottom Right
+    '''
+    if event == cv2.EVENT_LBUTTONDOWN:
+        print 'add corner event'
+        global corners, setup_frame_copy
+        if len(corners) is 4:
+            cv2.destroyWindow('corners')
+            return
+        else:
+            corners.append([x, y])
+            cv2.circle(setup_frame_copy,(x,y),5,(0,255,0),-1)
+            print 'coords: (%d, %d)' % (x, y)
+        cv2.imshow('corners', setup_frame_copy)
+
+# test_image = open_file()
+# output = average_pixels(test_image)
+# save_output(output)
+
+# Intended operation
+capture = cv2.VideoCapture(0)
+capture.set(3,640)
+capture.set(4,480)
+# Get a frame for picking corners
+ret, setup_frame = capture.read()
+
+setup_frame_copy = setup_frame.copy()
+# capture.release()
+cv2.namedWindow('corners')
+cv2.setMouseCallback('corners', add_corner)
+cv2.imshow('corners', setup_frame_copy)
+
+cv2.waitKey(0)
+cv2.destroyWindow('corners')
+
+# now we have corners, so warp the image to fit the screen
+cv2.imshow('result', transform_image(setup_frame_copy))
+cv2.waitKey(0)
+
+while True:
+    ret, frame = capture.read()
+    # this works
+    # edges = find_edges(frame)
+    # cv2.imshow('canny',edges)
+    ## frame_edges = fill_screen(frame)
+
+    # corners is set as global above
+    bounded_frame = transform_image(frame)
+    cv2.imshow('image', average_pixels(bounded_frame))
+    # transformed_frame = transform_image(frame)
+    # send_array(average_pixels(transformed_frame))

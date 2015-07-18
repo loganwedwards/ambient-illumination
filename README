@@ -47,3 +47,4 @@ All of these bits can be installed via homebrew on Mac.
 ### Resources
 1. Quadrilateral Perspective Transform: http://opencv-code.com/tutorials/automatic-perspective-correction-for-quadrilateral-objects/
 1. Capturing Mouse Events: http://www.pyimagesearch.com/2015/03/09/capturing-mouse-click-events-with-python-and-opencv/
+1. OpenCV docs and warping: http://opencv-python-tutroals.readthedocs.org/en/latest/py_tutorials/py_imgproc/py_geometric_transformations/py_geometric_transformations.html

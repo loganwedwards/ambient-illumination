@@ -12,6 +12,9 @@ the need for having a computer hooked up to the video source.
 Heck, this setup could even perform averaging of any scene in
 general. Why limit it to just a TV (although that's my motivation)?
 
+#### Demo
+Software demo: https://www.youtube.com/watch?v=M3mpcaB7TV0
+
 #### TODO
 1. ~~Implement averaging for border~~
 1. ~~Warp a quadrilaterial object to fill the scene~~
